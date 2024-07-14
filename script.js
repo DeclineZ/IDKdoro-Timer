@@ -152,3 +152,5 @@ resetTasksBtn.addEventListener('click', resetTasks);
 function resetTasks() {
     taskList.innerHTML = '';
 }
+
+
