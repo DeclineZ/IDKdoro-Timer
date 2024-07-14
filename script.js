@@ -85,8 +85,8 @@ function updateRestTimer() {
 function switchToRestMode() {
     isFocusMode = false;
     elapsedTime = 0;
-    minutesDisplay.textContent = '00';
-    secondsDisplay.textContent = String(restTime).padStart(2, '0');
+    minutesDisplay.textContent = String(Math.floor(restTime / 60)).padStart(2, '0');
+    secondsDisplay.textContent = String(restTime % 60).padStart(2, '0');
     startStopBtn.textContent = 'Start Rest';
 }
 
