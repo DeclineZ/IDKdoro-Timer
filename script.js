@@ -14,6 +14,7 @@ const taskList = document.getElementById('taskList');
 const bgColorPicker = document.getElementById('bgColorPicker');
 const textColorPicker = document.getElementById('textColorPicker');
 const applyThemeBtn = document.getElementById('applyThemeBtn');
+const vignette = document.getElementById('vignette');
 
 startStopBtn.addEventListener('click', toggleTimer);
 addTaskBtn.addEventListener('click', addTask);
@@ -40,6 +41,7 @@ function startFocusTimer() {
     timerInterval = setInterval(updateTimer, 1000);
     startStopBtn.textContent = 'Stop';
     isRunning = true;
+    vignette.style.setProperty('opacity', '100%')
 }
 
 function stopFocusTimer() {
@@ -88,6 +90,8 @@ function switchToRestMode() {
     minutesDisplay.textContent = String(Math.floor(restTime / 60)).padStart(2, '0');
     secondsDisplay.textContent = String(restTime % 60).padStart(2, '0');
     startStopBtn.textContent = 'Start Rest';
+    vignette.style.setProperty('opacity', '0%')
+
 }
 
 function switchToFocusMode() {
