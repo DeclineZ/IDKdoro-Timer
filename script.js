@@ -20,6 +20,7 @@ const bgColorInput = document.getElementById('bg-color-input');
 const backgroundInput = document.getElementById('background-input');
 const notificationSound = document.getElementById('notification-sound');
 const resetBtn = document.getElementById('reset-btn')
+const vigg = document.getElementById('vigg')
 
 function formatTime(ms) {
     const date = new Date(ms);
@@ -34,6 +35,7 @@ function updateTimer() {
 
 function startTimer() {
     startTime = Date.now() - elapsedTime;
+    vigg.style.setProperty('opacity', 100)
     timerInterval = setInterval(updateTimer, 1000);
     toggleBtn.textContent = 'Stop';
     isRunning = true;
@@ -42,6 +44,7 @@ function startTimer() {
 function stopTimer() {
     clearInterval(timerInterval);
     toggleBtn.textContent = 'Start';
+    vigg.style.setProperty('opacity', 0)
     isRunning = false;
 }
 
