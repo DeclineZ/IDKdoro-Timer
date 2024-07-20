@@ -54,3 +54,13 @@ body {
     padding: 20px;
     margin-bottom: 20px;
 }
+
+.btn-container {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+}
+
+.btn-container button {
+    width: 50%;
+}

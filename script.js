@@ -19,6 +19,7 @@ const textColorInput = document.getElementById('text-color-input');
 const bgColorInput = document.getElementById('bg-color-input');
 const backgroundInput = document.getElementById('background-input');
 const notificationSound = document.getElementById('notification-sound');
+const resetBtn = document.getElementById('reset-btn')
 
 function formatTime(ms) {
     const date = new Date(ms);
@@ -42,6 +43,16 @@ function stopTimer() {
     clearInterval(timerInterval);
     toggleBtn.textContent = 'Start';
     isRunning = false;
+}
+
+function resetTimer() {
+    stopTimer();
+    switchToFocusMode();    
+    isRunning = false;
+    isFocusMode = true;
+    elapsedTime = 0;
+    restTime = 0;
+    timerElement.textContent = formatTime(0);
 }
 
 function switchToRestMode() {
@@ -151,6 +162,10 @@ taskInput.addEventListener('keypress', (e) => {
 settingsBtn.addEventListener('click', () => {
     settingsModal.style.display = 'block';
 });
+
+resetBtn.addEventListener('click', () => {
+    resetTimer();
+})
 
 saveSettingsBtn.addEventListener('click', () => {
     const textColor = textColorInput.value;
