@@ -1,3 +1,4 @@
+
 let isRunning = false;
 let isFocusMode = true;
 let startTime;
@@ -5,156 +6,197 @@ let elapsedTime = 0;
 let timerInterval;
 let restTime = 0;
 
-const startStopBtn = document.getElementById('startStopBtn');
-const minutesDisplay = document.getElementById('minutes');
-const secondsDisplay = document.getElementById('seconds');
-const taskInput = document.getElementById('taskInput');
-const addTaskBtn = document.getElementById('addTaskBtn');
-const taskList = document.getElementById('taskList');
-const bgColorPicker = document.getElementById('bgColorPicker');
-const textColorPicker = document.getElementById('textColorPicker');
-const applyThemeBtn = document.getElementById('applyThemeBtn');
-const vignette = document.getElementById('vignette');
+const timerElement = document.getElementById('timer');
+const toggleBtn = document.getElementById('toggle-btn');
+const modeTitle = document.getElementById('mode-title');
+const taskInput = document.getElementById('task-input');
+const addTaskBtn = document.getElementById('add-task-btn');
+const taskList = document.getElementById('task-list');
+const settingsBtn = document.getElementById('settings-btn');
+const settingsModal = document.getElementById('settings-modal');
+const saveSettingsBtn = document.getElementById('save-settings-btn');
+const textColorInput = document.getElementById('text-color-input');
+const bgColorInput = document.getElementById('bg-color-input');
+const backgroundInput = document.getElementById('background-input');
+const notificationSound = document.getElementById('notification-sound');
 
-startStopBtn.addEventListener('click', toggleTimer);
-addTaskBtn.addEventListener('click', addTask);
-applyThemeBtn.addEventListener('click', applyTheme);
-
-function toggleTimer() {
-    if (isFocusMode) {
-        if (isRunning) {
-            stopFocusTimer();
-        } else {
-            startFocusTimer();
-        }
-    } else {
-        if (isRunning) {
-            stopRestTimer();
-        } else {
-            startRestTimer();
-        }
-}
-}
-
-function startFocusTimer() {
-    startTime = Date.now() - elapsedTime;
-    timerInterval = setInterval(updateTimer, 1000);
-    startStopBtn.textContent = 'Stop';
-    isRunning = true;
-    vignette.style.setProperty('opacity', '100%')
-}
-
-function stopFocusTimer() {
-    clearInterval(timerInterval);
-    elapsedTime = Date.now() - startTime;
-    restTime = Math.floor(elapsedTime / 5000);
-    switchToRestMode();
+function formatTime(ms) {
+    const date = new Date(ms);
+    return date.toISOString().substr(11, 8);
 }
 
 function updateTimer() {
-    elapsedTime = Date.now() - startTime;
-    const totalSeconds = Math.floor(elapsedTime / 1000);
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    minutesDisplay.textContent = String(minutes).padStart(2, '0');
-    secondsDisplay.textContent = String(seconds).padStart(2, '0');
+    const currentTime = Date.now();
+    elapsedTime = currentTime - startTime;
+    timerElement.textContent = formatTime(elapsedTime);
 }
 
-function startRestTimer() {
-    timerInterval = setInterval(updateRestTimer, 1000);
-    startStopBtn.textContent = 'Stop Rest';
+function startTimer() {
+    startTime = Date.now() - elapsedTime;
+    timerInterval = setInterval(updateTimer, 1000);
+    toggleBtn.textContent = 'Stop';
     isRunning = true;
 }
 
-function stopRestTimer() {
+function stopTimer() {
     clearInterval(timerInterval);
-    switchToFocusMode();
-}
-
-function updateRestTimer() {
-    if (restTime > 0) {
-        restTime--;
-        const minutes = Math.floor(restTime / 60);
-        const seconds = restTime % 60;
-        minutesDisplay.textContent = String(minutes).padStart(2, '0');
-        secondsDisplay.textContent = String(seconds).padStart(2, '0');
-    } else {
-        clearInterval(timerInterval);
-        switchToFocusMode();
-    }
+    toggleBtn.textContent = 'Start';
+    isRunning = false;
 }
 
 function switchToRestMode() {
     isFocusMode = false;
-    elapsedTime = 0;
-    minutesDisplay.textContent = String(Math.floor(restTime / 60)).padStart(2, '0');
-    secondsDisplay.textContent = String(restTime % 60).padStart(2, '0');
-    startStopBtn.textContent = 'Start Rest';
-    vignette.style.setProperty('opacity', '0%')
+    modeTitle.textContent = 'Rest Mode';
+    restTime = Math.floor(elapsedTime / (5 * 1000)); // Convert to seconds and divide by 5
+    elapsedTime = restTime * 1000; // Convert back to milliseconds
+    timerElement.textContent = formatTime(elapsedTime);
+    toggleBtn.textContent = 'Start Rest';
+}
 
+function startRestTimer() {
+    startTime = Date.now() + restTime * 1000;
+    timerInterval = setInterval(() => {
+        const remaining = startTime - Date.now();
+        if (remaining <= 0) {
+            stopTimer();
+            switchToFocusMode();
+            sendNotification();
+            playNotificationSound();
+        } else {
+            timerElement.textContent = formatTime(remaining);
+        }
+    }, 1000);
+    toggleBtn.textContent = 'Stop Rest';
+    isRunning = true;
 }
 
 function switchToFocusMode() {
     isFocusMode = true;
-    restTime = 0;
-    minutesDisplay.textContent = '00';
-    secondsDisplay.textContent = '00';
-    startStopBtn.textContent = 'Start Focus';
-    isRunning = false;
+    modeTitle.textContent = 'Focus Mode';
+    elapsedTime = 0;
+    updateTimer();
+    toggleBtn.textContent = 'Start';
 }
+
+function sendNotification() {
+    if (Notification.permission === "granted") {
+        new Notification("Rest Time Over!", {
+            body: "Time to get back to work!",
+            icon: "icon-512x512.png" // Replace with your icon URL
+        });
+    } else if (Notification.permission !== "denied") {
+        Notification.requestPermission().then(permission => {
+            if (permission === "granted") {
+                sendNotification();
+            }
+        });
+    }
+}
+
+function playNotificationSound() {
+    notificationSound.play();
+}
+
+toggleBtn.addEventListener('click', () => {
+    if (isFocusMode) {
+        if (isRunning) {
+            stopTimer();
+            switchToRestMode();
+        } else {
+            startTimer();
+        }
+    } else {
+        if (isRunning) {
+            stopTimer();
+        } else {
+            startRestTimer();
+        }
+    }
+});
 
 function addTask() {
     const taskText = taskInput.value.trim();
-    if (taskText !== '') {
-        const taskItem = document.createElement('li');
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.addEventListener('change', () => {
-            taskItem.classList.toggle('checked', checkbox.checked);
-        });
-        const taskSpan = document.createElement('span');
-        taskSpan.textContent = taskText;
-        taskItem.appendChild(checkbox);
-        taskItem.appendChild(taskSpan);
-        taskList.appendChild(taskItem);
+    if (taskText) {
+        const li = document.createElement('li');
+        li.className = 'task-item flex items-center mb-2';
+        li.innerHTML = `
+            <input type="checkbox" class="mr-2">
+            <span class="flex-grow">${taskText}</span>
+            <button class="delete-btn ml-2 text-red-500">&times;</button>
+        `;
+        taskList.appendChild(li);
         taskInput.value = '';
+
+        li.querySelector('input[type="checkbox"]').addEventListener('change', (e) => {
+            if (e.target.checked) {
+                li.classList.add('completed');
+            } else {
+                li.classList.remove('completed');
+            }
+        });
+
+        li.querySelector('.delete-btn').addEventListener('click', () => {
+            li.remove();
+        });
     }
 }
 
-const bgImageUrl = document.getElementById('bgImageUrl');
+addTaskBtn.addEventListener('click', addTask);
+taskInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        addTask();
+    }
+});
 
-function applyTheme() {
-    document.body.style.setProperty('--bg-color', bgColorPicker.value);
-    document.body.style.setProperty('--text-color', textColorPicker.value);
-    const imageUrl = bgImageUrl.value.trim();
-    if (imageUrl) {
-        document.body.style.setProperty('--bg-image', `url(${imageUrl})`);
+settingsBtn.addEventListener('click', () => {
+    settingsModal.style.display = 'block';
+});
+
+saveSettingsBtn.addEventListener('click', () => {
+    const textColor = textColorInput.value;
+    const bgColor = bgColorInput.value;
+    const backgroundUrl = backgroundInput.value;
+
+    // Apply text color
+    document.body.style.color = textColor;
+
+    // Apply background color
+    document.body.style.backgroundColor = bgColor;
+
+    // Apply background image/gif
+    if (backgroundUrl) {
+        document.body.style.backgroundImage = `url(${backgroundUrl})`;
+        document.body.style.backgroundSize = 'cover';
+        document.body.style.backgroundPosition = 'center';
+        document.body.style.backgroundRepeat = 'no-repeat';
     } else {
-        document.body.style.setProperty('--bg-image', 'none');
+        document.body.style.backgroundImage = 'none';
     }
-}
 
-const resetBtn = document.getElementById('resetBtn');
+    settingsModal.style.display = 'none';
+});
 
-resetBtn.addEventListener('click', resetTimer);
+// Close modal when clicking outside
+window.addEventListener('click', (e) => {
+    if (e.target === settingsModal) {
+        settingsModal.style.display = 'none';
+    }
+});
 
-function resetTimer() {
-    clearInterval(timerInterval);
-    elapsedTime = 0;
-    restTime = 0;
-    isRunning = false;
-    isFocusMode = true;
-    minutesDisplay.textContent = '00';
-    secondsDisplay.textContent = '00';
-    startStopBtn.textContent = 'Start Focus';
-}
-
-const resetTasksBtn = document.getElementById('resetTasksBtn');
-
-resetTasksBtn.addEventListener('click', resetTasks);
-
-function resetTasks() {
-    taskList.innerHTML = '';
+// Request notification permission
+if ("Notification" in window) {
+    Notification.requestPermission();
 }
 
 
+// Service Worker Registration for PWA
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+            .then(registration => {
+                console.log('ServiceWorker registration successful with scope: ', registration.scope);
+            }, err => {
+                console.log('ServiceWorker registration failed: ', err);
+            });
+    });
+}
