@@ -1,7 +1,7 @@
 {
   "name": "IDKdoro",
   "short_name": "IDKdoro",
-  "start_url": "/",
+  "start_url": "/IDKdoro-Timer/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#1D1C1A",
